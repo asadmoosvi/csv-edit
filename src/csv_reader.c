@@ -13,7 +13,8 @@ struct csv_reader {
     FILE *csv_file;
 };
 
-void strip_nl(char *s)
+void
+strip_nl(char *s)
 {
     char *c;
     if ((c = strchr(s, '\n')))
