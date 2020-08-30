@@ -67,7 +67,7 @@ init_csv_reader(const char *csv_filename, bool heading)
         reader->rows[reader->rowcount] = malloc(strlen(line_buf) + 1);
         strcpy(reader->rows[reader->rowcount], line_buf);
         reader->rowcount++;
-        reader->rows = reallocarray(reader->rows, reader->rowcount + 1, sizeof(char *));
+        reader->rows = realloc(reader->rows, (reader->rowcount + 1) * sizeof(char *));
         if (reader->rows == NULL) {
             print_error("init_csv_reader", "realloc failed for reader->rows");
             return NULL;
