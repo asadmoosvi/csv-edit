@@ -13,7 +13,7 @@ struct csv_reader {
     FILE *csv_file;
 };
 
-void
+static void
 strip_nl(char *s)
 {
     char *c;
@@ -21,7 +21,7 @@ strip_nl(char *s)
         *c = '\0';
 }
 
-void
+static void
 print_error(const char *func_name, const char *msg)
 {
     fprintf(stderr, "~> ERROR (%s): %s\n", func_name, msg);
