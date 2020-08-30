@@ -112,7 +112,7 @@ csv_reader_get_rows(struct csv_reader *reader)
     return (const char **) reader->rows;
 }
 
-bool
+void
 csv_reader_cleanup(struct csv_reader *reader)
 {
     free(reader->headings);
@@ -122,5 +122,4 @@ csv_reader_cleanup(struct csv_reader *reader)
     free(reader->rows);
     fclose(reader->csv_file);
     free(reader);
-    return true;
 }
