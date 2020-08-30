@@ -37,12 +37,15 @@ init_csv_reader(const char *csv_filename, bool heading)
     }
 
     struct csv_reader *reader = malloc(sizeof(struct csv_reader));
+    if (reader == NULL) {
+        print_error("init_csv_reader", "malloc failed for csv_reader");
+        fclose(fp);
+        return NULL;
+    }
+
     reader->csv_file = fp;
     reader->rowcount = 0;
     reader->colcount = 0;
-
-    if (reader == NULL)
-        print_error("init_csv_reader", "malloc failed for csv_reader");
 
     char line_buf[LINE_LEN];
 
