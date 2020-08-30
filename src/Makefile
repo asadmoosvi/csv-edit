@@ -2,10 +2,10 @@ CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -std=c99
 BINDIR = ../bin
 
-all: test
+all: $(BINDIR)/test
 
-test: test.c csv_reader.c
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^
+$(BINDIR)/test: test.c csv_reader.c
+	$(CC) $(CFLAGS) -o $@ $^
 
 .PHONY: clean
 
