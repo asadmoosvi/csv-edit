@@ -1,0 +1,6 @@
+*.csv
+*.o
+*.so
+
+test
+bin/
