@@ -2,16 +2,17 @@ CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -std=c99
 BINDIR = ../bin
 
-TEST_SRCS = test.c csv_reader.c test_helpers.c
-TEST_DEPS = csv_reader.h test_helpers.h
-TEST_EXE = test
+SRCS = csv_reader.c test_helpers.c
+OBJS = $(SRCS:.c=.o)
+DEPS = $(SRCS:.c=.h)
 
-all: $(BINDIR)/$(TEST_EXE)
+TESTS_EXE = test
 
-$(BINDIR)/$(TEST_EXE): $(TEST_SRCS) $(TEST_DEPS)
-	$(CC) $(CFLAGS) -o $@ $(TEST_SRCS)
+all: $(TESTS_EXE)
+
+$(TESTS_EXE): $(OBJS) $(TEST_DEPS)
 
 .PHONY: clean
 
 clean:
-	$(RM) $(BINDIR)/*.o $(BINDIR)/test
+	$(RM) $(TESTS_EXE) $(OBJS)
