@@ -3,20 +3,13 @@
 #include <string.h>
 #include <stdbool.h>
 #include "csv_reader.h"
-
-void
-print_n_char(char c, int n)
-{
-    for (int i = 0; i < n; i++)
-        putchar(c);
-    putchar('\n');
-}
+#include "test_helpers.h"
 
 int
 main(int argc, char *argv[])
 {
     if (argc != 3) {
-        fprintf(stderr, "Usage: %s csv_filename [true, false]\n", argv[0]);
+        print_usage(argv[0]);
         exit(EXIT_FAILURE);
     }
 

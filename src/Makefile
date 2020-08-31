@@ -2,8 +2,8 @@ CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -std=c99
 BINDIR = ../bin
 
-TEST_SRCS = test.c csv_reader.c
-TEST_DEPS = csv_reader.h
+TEST_SRCS = test.c csv_reader.c test_helpers.c
+TEST_DEPS = csv_reader.h test_helpers.h
 TEST_EXE = test
 
 all: $(BINDIR)/$(TEST_EXE)
