@@ -16,15 +16,7 @@ main(int argc, char *argv[])
     const char *csv_filename = argv[1];
     bool flag;
 
-    if (strcmp(argv[2], "true") == 0) {
-        flag = true;
-    } else if (strcmp(argv[2], "false") == 0) {
-        flag = false;
-    } else {
-        fprintf(stderr, "~> invalid flag `%s`\n", argv[2]);
-        fprintf(stderr, "~> valid values are true or false only\n");
-        exit(EXIT_FAILURE);
-    }
+    flag = str_to_bool(argv[2]);
 
     csv_reader_t *reader = init_csv_reader(csv_filename, flag);
     if (reader == NULL) {
