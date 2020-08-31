@@ -10,11 +10,16 @@ struct csv_reader {
     int rowcount;
     int colcount;
     char *headings;
+    char *heading;
     char **rows;
     FILE *csv_file;
 };
 
 
+/*
+ * Initialize and return a csv_reader object
+ * from a csv_filename
+ */
 struct csv_reader *
 init_csv_reader(const char *csv_filename, bool heading)
 {
@@ -34,6 +39,7 @@ init_csv_reader(const char *csv_filename, bool heading)
     reader->csv_file = fp;
     reader->rowcount = 0;
     reader->colcount = 0;
+    reader->heading = NULL;
 
     char line_buf[LINE_LEN];
 
@@ -76,38 +82,93 @@ init_csv_reader(const char *csv_filename, bool heading)
     return reader;
 }
 
+/*
+ * Number of rows in CSV file (excluding the headings)
+ */
 int
 csv_reader_get_rowcount(struct csv_reader *reader)
 {
     return reader->rowcount;
 }
 
+/*
+ * Number of columns in CSV file
+ */
 int
 csv_reader_get_colcount(struct csv_reader *reader)
 {
     return reader->colcount;
 }
 
+/*
+ * Get raw headings, unedited from CSV file
+ */
 const char *
 csv_reader_get_headings(struct csv_reader *reader)
 {
     return reader->headings;
 }
 
+/*
+ * Get raw rows, unedited from CSV file
+ */
 const char **
 csv_reader_get_rows(struct csv_reader *reader)
 {
     return (const char **) reader->rows;
 }
 
+/*
+ * Cleanup csv_reader_object's resources
+ */
 void
 csv_reader_cleanup(struct csv_reader *reader)
 {
     free(reader->headings);
+    free(reader->heading);
     for (int i = 0; i < reader->rowcount; i++) {
         free(reader->rows[i]);
     }
     free(reader->rows);
     fclose(reader->csv_file);
     free(reader);
+}
+
+/*
+ * Get a heading name by index number
+ */
+const char *
+csv_reader_get_heading(struct csv_reader *reader, int i)
+{
+    int current_idx = 0;
+
+    // check if i is valid
+    if (i < 0 || i >= reader->colcount) {
+        print_error("csv_reader_get_heading", "invalid index");
+        fprintf(stderr, "~> index received `%d` (valid indices are between 0 and %d inclusive)\n",
+                i, reader->colcount - 1);
+        csv_reader_cleanup(reader);
+        exit(EXIT_FAILURE);
+    }
+
+    char *heading_start;
+    free(reader->heading);
+    reader->heading = malloc(strlen(reader->headings) + 1);
+    strcpy(reader->heading, reader->headings);
+    heading_start = reader->heading;
+
+    char *token;
+    if (current_idx == 0)
+        token = strtok(reader->heading, ",");
+
+    while (current_idx != i) {
+        token = strtok(NULL, ",");
+        current_idx++;
+    }
+
+    while (*token)
+        *heading_start++ = *token++;
+    *heading_start = '\0';
+
+    return reader->heading;
 }

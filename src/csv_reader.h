@@ -7,3 +7,4 @@ int csv_reader_get_rowcount(csv_reader_t *reader);
 int csv_reader_get_colcount(csv_reader_t *reader);
 void csv_reader_cleanup(csv_reader_t *reader);
 const char **csv_reader_get_rows(csv_reader_t *reader);
+const char *csv_reader_get_heading(csv_reader_t *reader, int i);
