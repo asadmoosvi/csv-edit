@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -std=c99
 BINDIR = ../bin
 
-SRCS = csv_reader.c test_helpers.c
+SRCS = csv_reader.c csv_helpers.c test_helpers.c
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.h)
 

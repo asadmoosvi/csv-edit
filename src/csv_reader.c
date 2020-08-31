@@ -1,7 +1,8 @@
-#include "csv_reader.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "csv_reader.h"
+#include "csv_helpers.h"
 
 #define LINE_LEN 4096
 
@@ -13,19 +14,6 @@ struct csv_reader {
     FILE *csv_file;
 };
 
-static void
-strip_nl(char *s)
-{
-    char *c;
-    if ((c = strchr(s, '\n')))
-        *c = '\0';
-}
-
-static void
-print_error(const char *func_name, const char *msg)
-{
-    fprintf(stderr, "~> ERROR (%s): %s\n", func_name, msg);
-}
 
 struct csv_reader *
 init_csv_reader(const char *csv_filename, bool heading)
