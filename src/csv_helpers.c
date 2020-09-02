@@ -23,3 +23,26 @@ char *str_slice(const char *string, int start, int end) {
 
   return slice;
 }
+
+void get_col_start_end(const char *row, int fetch_idx, int *start, int *end) {
+  int idx = 0;
+  int sep_count = 0;
+
+  if (fetch_idx == 0) {
+    *start = 0;
+  } else {
+    while (row[idx]) {
+      if (row[idx] == ',')
+        sep_count++;
+      idx++;
+      if (sep_count == fetch_idx)
+        break;
+    }
+    *start = idx;
+  }
+
+  while (row[idx] && row[idx] != ',')
+    idx++;
+
+  *end = idx;
+}
