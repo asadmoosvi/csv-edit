@@ -123,7 +123,9 @@ void csv_reader_cleanup(struct csv_reader *reader) {
 }
 
 /*
- * Get a heading name by index number
+ * Get a heading name by index number.
+ * Only a single heading can be referenced at any one time.
+ * You currently cannot have two heading variables.
  */
 const char *csv_reader_get_heading(struct csv_reader *reader, int i) {
   int current_idx = 0;
