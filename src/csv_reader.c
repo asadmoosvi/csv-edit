@@ -128,35 +128,17 @@ void csv_reader_cleanup(struct csv_reader *reader) {
  * You currently cannot have two heading variables.
  */
 const char *csv_reader_get_heading(struct csv_reader *reader, int i) {
-  int current_idx = 0;
+  int heading_start, heading_end;
 
-  // check if i is valid
   if (i < 0 || i >= reader->colcount) {
     print_error("csv_reader_get_heading", "invalid index");
-    fprintf(stderr,
-            "~> index received `%d` (valid indices are between 0 and %d "
-            "inclusive)\n",
+    fprintf(stderr, "~> index is `%d` (allowable indices are 0 to %d inclusive)\n",
             i, reader->colcount - 1);
-    csv_reader_cleanup(reader);
-    exit(EXIT_FAILURE);
+    return NULL;
   }
 
-  char *heading_start;
   free(reader->heading);
-  reader->heading = malloc(strlen(reader->headings) + 1);
-  strcpy(reader->heading, reader->headings);
-  heading_start = reader->heading;
-
-  char *token;
-  if (current_idx == 0) token = strtok(reader->heading, ",");
-
-  while (current_idx != i) {
-    token = strtok(NULL, ",");
-    current_idx++;
-  }
-
-  while (*token) *heading_start++ = *token++;
-  *heading_start = '\0';
-
+  get_col_start_end(reader->headings, i, &heading_start, &heading_end);
+  reader->heading = str_slice(reader->headings, heading_start, heading_end);
   return reader->heading;
 }
