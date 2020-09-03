@@ -144,7 +144,8 @@ const char *csv_reader_get_heading(struct csv_reader *reader, int i) {
     print_error("csv_reader_get_heading", "invalid index");
     fprintf(stderr, "~> index is `%d` (allowable indices are 0 to %d inclusive)\n",
             i, reader->colcount - 1);
-    return NULL;
+    csv_reader_cleanup(reader);
+    exit(EXIT_FAILURE);
   }
 
   get_col_start_end(reader->headings, i, &heading_start, &heading_end);
