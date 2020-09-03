@@ -12,10 +12,13 @@ struct csv_reader {
   int rowcount;
   int colcount;
   char *headings;
-  char *heading;
   char **rows;
+  char **misc_data;
+  int misc_data_size;
   FILE *csv_file;
 };
+
+static void dump_to_misc(struct csv_reader *reader, char *str);
 
 /*
  * Initialize and return a csv_reader object
@@ -25,20 +28,21 @@ struct csv_reader *init_csv_reader(const char *csv_filename, bool heading) {
   FILE *fp = fopen(csv_filename, "r");
   if (fp == NULL) {
     print_error("init_csv_reader", "unable to open csv file");
-    return NULL;
+    exit(EXIT_FAILURE);
   }
 
   struct csv_reader *reader = malloc(sizeof(struct csv_reader));
   if (reader == NULL) {
     print_error("init_csv_reader", "malloc failed for csv_reader");
     fclose(fp);
-    return NULL;
+    exit(EXIT_FAILURE);
   }
 
   reader->csv_file = fp;
   reader->rowcount = 0;
   reader->colcount = 0;
-  reader->heading = NULL;
+  reader->misc_data = NULL;
+  reader->misc_data_size = 0;
 
   char line_buf[LINE_LEN];
 
@@ -64,7 +68,8 @@ struct csv_reader *init_csv_reader(const char *csv_filename, bool heading) {
         realloc(reader->rows, (reader->rowcount + 1) * sizeof(char *));
     if (reader->rows == NULL) {
       print_error("init_csv_reader", "realloc failed for reader->rows");
-      return NULL;
+      csv_reader_cleanup(reader);
+      exit(EXIT_FAILURE);
     }
   }
 
@@ -113,22 +118,27 @@ const char **csv_reader_get_rows(struct csv_reader *reader) {
  */
 void csv_reader_cleanup(struct csv_reader *reader) {
   free(reader->headings);
-  free(reader->heading);
+
   for (int i = 0; i < reader->rowcount; i++) {
     free(reader->rows[i]);
   }
   free(reader->rows);
+
+  for (int i = 0; i < reader->misc_data_size; i++) {
+    free(reader->misc_data[i]);
+  }
+  free(reader->misc_data);
+
   fclose(reader->csv_file);
   free(reader);
 }
 
 /*
- * Get a heading name by index number.
- * Only a single heading can be referenced at any one time.
- * You currently cannot have two heading variables.
+ * Get a heading name by its index number.
  */
 const char *csv_reader_get_heading(struct csv_reader *reader, int i) {
   int heading_start, heading_end;
+  char *heading;
 
   if (i < 0 || i >= reader->colcount) {
     print_error("csv_reader_get_heading", "invalid index");
@@ -137,8 +147,24 @@ const char *csv_reader_get_heading(struct csv_reader *reader, int i) {
     return NULL;
   }
 
-  free(reader->heading);
   get_col_start_end(reader->headings, i, &heading_start, &heading_end);
-  reader->heading = str_slice(reader->headings, heading_start, heading_end);
-  return reader->heading;
+  heading = str_slice(reader->headings, heading_start, heading_end);
+  // save heading
+  dump_to_misc(reader, heading);
+
+  return heading;
+}
+
+/*
+ * Save a new string in misc_data.
+ */
+static void dump_to_misc(struct csv_reader *reader, char *str) {
+  reader->misc_data = realloc(reader->misc_data, sizeof(char *) * ++reader->misc_data_size);
+  if (reader->misc_data == NULL) {
+    print_error("dump_to_misc", "realloc failed");
+    csv_reader_cleanup(reader);
+    exit(EXIT_FAILURE);
+  }
+
+  reader->misc_data[reader->misc_data_size - 1] = str;
 }
