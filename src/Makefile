@@ -6,7 +6,7 @@ SRCS = csv_reader.c csv_helpers.c test_helpers.c
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.h)
 
-TESTS_EXE = test test2
+TESTS_EXE = test test2 test3
 
 all: $(TESTS_EXE)
 
