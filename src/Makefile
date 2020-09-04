@@ -7,7 +7,7 @@ OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.h)
 
 SHARED_LIB = libcsv-edit.so
-TESTS_EXE = test test2 test3
+TESTS_EXE = test test2 test3 test4
 
 all: $(TESTS_EXE)
 
