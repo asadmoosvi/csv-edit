@@ -169,3 +169,31 @@ static void dump_to_misc(struct csv_reader *reader, char *str) {
 
   reader->misc_data[reader->misc_data_size - 1] = str;
 }
+
+/*
+ * Get a specific row item by row number and heading.
+ */
+const char *csv_reader_get_rowitem(csv_reader_t *reader, int row, const char *heading) {
+  int item_start, item_end;
+  int idx = -1;
+  char *item;
+  const char *heading_search;
+
+  for (int i = 0; i < reader->colcount; i++) {
+    heading_search = csv_reader_get_heading(reader, i);
+    if (strcmp(heading_search, heading) == 0)
+      idx = i;
+  }
+
+  if (idx == -1) {
+    print_error("csv_reader_get_heading", "invalid heading");
+    fprintf(stderr, "~> heading `%s` does not exist\n", heading);
+    csv_reader_cleanup(reader);
+    exit(EXIT_FAILURE);
+  }
+
+  get_col_start_end(reader->rows[row],  idx, &item_start, &item_end);
+  item = str_slice(reader->rows[row], item_start, item_end);
+  dump_to_misc(reader, item);
+  return item;
+}
