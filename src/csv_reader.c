@@ -16,9 +16,47 @@ struct csv_reader {
   char **misc_data;
   int misc_data_size;
   FILE *csv_file;
+  int max_col_width;
 };
 
 static void dump_to_misc(struct csv_reader *reader, char *str);
+static int get_max_colwidth(struct csv_reader *reader);
+
+/*
+ * Save a new string in misc_data.
+ */
+static void dump_to_misc(struct csv_reader *reader, char *str) {
+  reader->misc_data = realloc(reader->misc_data, sizeof(char *) * ++reader->misc_data_size);
+  if (reader->misc_data == NULL) {
+    print_error("dump_to_misc", "realloc failed");
+    csv_reader_cleanup(reader);
+    exit(EXIT_FAILURE);
+  }
+
+  reader->misc_data[reader->misc_data_size - 1] = str;
+}
+
+/*
+ * Find the maximum column width if not
+ * found already.
+ */
+static int get_max_colwidth(struct csv_reader *reader) {
+  if (reader->max_col_width != 0)
+    return reader->max_col_width;
+
+  const char *item;
+  const char *heading;
+  for (int i = 0; i < reader->rowcount; i++) {
+    for (int j = 0; j < reader->colcount; j++) {
+      heading = csv_reader_get_heading(reader, j);
+      item = csv_reader_get_rowitem(reader, i, heading);
+      if ((int) strlen(item) > reader->max_col_width)
+        reader->max_col_width = strlen(item);
+    }
+  }
+
+  return reader->max_col_width;
+}
 
 /*
  * Initialize and return a csv_reader object
@@ -43,7 +81,7 @@ struct csv_reader *init_csv_reader(const char *csv_filename, bool heading) {
   reader->colcount = 0;
   reader->misc_data = NULL;
   reader->misc_data_size = 0;
-
+  reader->max_col_width = 0;
   char line_buf[LINE_LEN];
 
   // get heading if asked for
@@ -64,8 +102,7 @@ struct csv_reader *init_csv_reader(const char *csv_filename, bool heading) {
     reader->rows[reader->rowcount] = malloc(strlen(line_buf) + 1);
     strcpy(reader->rows[reader->rowcount], line_buf);
     reader->rowcount++;
-    reader->rows =
-        realloc(reader->rows, (reader->rowcount + 1) * sizeof(char *));
+    reader->rows = realloc(reader->rows, (reader->rowcount + 1) * sizeof(char *));
     if (reader->rows == NULL) {
       print_error("init_csv_reader", "realloc failed for reader->rows");
       csv_reader_cleanup(reader);
@@ -156,24 +193,11 @@ const char *csv_reader_get_heading(struct csv_reader *reader, int i) {
   return heading;
 }
 
-/*
- * Save a new string in misc_data.
- */
-static void dump_to_misc(struct csv_reader *reader, char *str) {
-  reader->misc_data = realloc(reader->misc_data, sizeof(char *) * ++reader->misc_data_size);
-  if (reader->misc_data == NULL) {
-    print_error("dump_to_misc", "realloc failed");
-    csv_reader_cleanup(reader);
-    exit(EXIT_FAILURE);
-  }
-
-  reader->misc_data[reader->misc_data_size - 1] = str;
-}
 
 /*
  * Get a specific row item by row number and heading.
  */
-const char *csv_reader_get_rowitem(csv_reader_t *reader, int row, const char *heading) {
+const char *csv_reader_get_rowitem(struct csv_reader *reader, int row, const char *heading) {
   int item_start, item_end;
   int idx = -1;
   char *item;
@@ -203,4 +227,33 @@ const char *csv_reader_get_rowitem(csv_reader_t *reader, int row, const char *he
   item = str_slice(reader->rows[row], item_start, item_end);
   dump_to_misc(reader, item);
   return item;
+}
+
+void csv_reader_print_table(struct csv_reader *reader) {
+  int width = 30;
+  char sep = '|';
+
+  width = get_max_colwidth(reader) + 5;
+  // headers
+  print_bar(reader->colcount, width);
+  putchar(sep);
+  for (int i = 0; i < reader->colcount; i++) {
+    print_centered_text(csv_reader_get_heading(reader, i), i == 0 ? width - 1 : width);
+    putchar(sep);
+  }
+  putchar('\n');
+  print_bar(reader->colcount, width);
+
+  //rows
+  for (int i = 0; i < reader->rowcount; i++) {
+    for (int j = 0; j < reader->colcount; j++) {
+      if (j == 0)
+        putchar(sep);
+      print_centered_text(csv_reader_get_rowitem(reader, i,
+            csv_reader_get_heading(reader, j)), j == 0 ? width - 1 : width);
+      putchar(sep);
+    }
+    putchar('\n');
+  }
+  print_bar(reader->colcount, width);
 }
