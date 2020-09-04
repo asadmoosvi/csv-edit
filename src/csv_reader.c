@@ -179,6 +179,13 @@ const char *csv_reader_get_rowitem(csv_reader_t *reader, int row, const char *he
   char *item;
   const char *heading_search;
 
+  if (row < 0 || row >= reader->rowcount) {
+    print_error("csv_reader_get_rowitem", "out of bounds");
+    fprintf(stderr, "~> row to fetch `%d` is out of bounds\n", row);
+    csv_reader_cleanup(reader);
+    exit(EXIT_FAILURE);
+  }
+
   for (int i = 0; i < reader->colcount; i++) {
     heading_search = csv_reader_get_heading(reader, i);
     if (strcmp(heading_search, heading) == 0)
