@@ -2,6 +2,6 @@
 *.o
 *.so
 
-test
-test2
+test*
+!test_*.[c,h]
 bin/
