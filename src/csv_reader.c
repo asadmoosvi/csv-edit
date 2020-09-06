@@ -9,14 +9,14 @@
 #define LINE_LEN 4096
 
 struct csv_reader {
-  int rowcount;
-  int colcount;
-  char *headings;
-  char **rows;
-  char **misc_data;
-  int misc_data_size;
-  FILE *csv_file;
-  int max_col_width;
+    int rowcount;
+    int colcount;
+    char *headings;
+    char **rows;
+    char **misc_data;
+    int misc_data_size;
+    FILE *csv_file;
+    int max_col_width;
 };
 
 static void dump_to_misc(struct csv_reader *reader, char *str);
@@ -26,14 +26,15 @@ static int get_max_colwidth(struct csv_reader *reader);
  * Save a new string in misc_data.
  */
 static void dump_to_misc(struct csv_reader *reader, char *str) {
-  reader->misc_data = realloc(reader->misc_data, sizeof(char *) * ++reader->misc_data_size);
-  if (reader->misc_data == NULL) {
-    print_error("dump_to_misc", "realloc failed");
-    csv_reader_cleanup(reader);
-    exit(EXIT_FAILURE);
-  }
+    reader->misc_data =
+        realloc(reader->misc_data, sizeof(char *) * ++reader->misc_data_size);
+    if (reader->misc_data == NULL) {
+        print_error("dump_to_misc", "realloc failed");
+        csv_reader_cleanup(reader);
+        exit(EXIT_FAILURE);
+    }
 
-  reader->misc_data[reader->misc_data_size - 1] = str;
+    reader->misc_data[reader->misc_data_size - 1] = str;
 }
 
 /*
@@ -41,21 +42,20 @@ static void dump_to_misc(struct csv_reader *reader, char *str) {
  * found already.
  */
 static int get_max_colwidth(struct csv_reader *reader) {
-  if (reader->max_col_width != 0)
-    return reader->max_col_width;
+    if (reader->max_col_width != 0) return reader->max_col_width;
 
-  const char *item;
-  const char *heading;
-  for (int i = 0; i < reader->rowcount; i++) {
-    for (int j = 0; j < reader->colcount; j++) {
-      heading = csv_reader_get_heading(reader, j);
-      item = csv_reader_get_rowitem(reader, i, heading);
-      if ((int) strlen(item) > reader->max_col_width)
-        reader->max_col_width = strlen(item);
+    const char *item;
+    const char *heading;
+    for (int i = 0; i < reader->rowcount; i++) {
+        for (int j = 0; j < reader->colcount; j++) {
+            heading = csv_reader_get_heading(reader, j);
+            item = csv_reader_get_rowitem(reader, i, heading);
+            if ((int)strlen(item) > reader->max_col_width)
+                reader->max_col_width = strlen(item);
+        }
     }
-  }
 
-  return reader->max_col_width;
+    return reader->max_col_width;
 }
 
 /*
@@ -63,197 +63,200 @@ static int get_max_colwidth(struct csv_reader *reader) {
  * from a csv_filename
  */
 struct csv_reader *init_csv_reader(const char *csv_filename, bool heading) {
-  FILE *fp = fopen(csv_filename, "r");
-  if (fp == NULL) {
-    print_error("init_csv_reader", "unable to open csv file");
-    exit(EXIT_FAILURE);
-  }
-
-  struct csv_reader *reader = malloc(sizeof(struct csv_reader));
-  if (reader == NULL) {
-    print_error("init_csv_reader", "malloc failed for csv_reader");
-    fclose(fp);
-    exit(EXIT_FAILURE);
-  }
-
-  reader->csv_file = fp;
-  reader->rowcount = 0;
-  reader->colcount = 0;
-  reader->misc_data = NULL;
-  reader->misc_data_size = 0;
-  reader->max_col_width = 0;
-  char line_buf[LINE_LEN];
-
-  // get heading if asked for
-  if (heading) {
-    if (fgets(line_buf, LINE_LEN, fp)) {
-      strip_nl(line_buf);
-      reader->headings = malloc(strlen(line_buf) + 1);
-      strcpy(reader->headings, line_buf);
+    FILE *fp = fopen(csv_filename, "r");
+    if (fp == NULL) {
+        print_error("init_csv_reader", "unable to open csv file");
+        exit(EXIT_FAILURE);
     }
-  } else {
-    reader->headings = NULL;
-  }
 
-  // get rows
-  reader->rows = malloc(sizeof(char *));
-  while (fgets(line_buf, LINE_LEN, fp)) {
-    strip_nl(line_buf);
-    reader->rows[reader->rowcount] = malloc(strlen(line_buf) + 1);
-    strcpy(reader->rows[reader->rowcount], line_buf);
-    reader->rowcount++;
-    reader->rows = realloc(reader->rows, (reader->rowcount + 1) * sizeof(char *));
-    if (reader->rows == NULL) {
-      print_error("init_csv_reader", "realloc failed for reader->rows");
-      csv_reader_cleanup(reader);
-      exit(EXIT_FAILURE);
+    struct csv_reader *reader = malloc(sizeof(struct csv_reader));
+    if (reader == NULL) {
+        print_error("init_csv_reader", "malloc failed for csv_reader");
+        fclose(fp);
+        exit(EXIT_FAILURE);
     }
-  }
 
-  // get colcount
-  char *c = reader->rows[0];
-  while (*c) {
-    if (*c == ',') reader->colcount++;
-    c++;
-  }
-  // last column
-  reader->colcount++;
+    reader->csv_file = fp;
+    reader->rowcount = 0;
+    reader->colcount = 0;
+    reader->misc_data = NULL;
+    reader->misc_data_size = 0;
+    reader->max_col_width = 0;
+    char line_buf[LINE_LEN];
 
-  return reader;
+    // get heading if asked for
+    if (heading) {
+        if (fgets(line_buf, LINE_LEN, fp)) {
+            strip_nl(line_buf);
+            reader->headings = malloc(strlen(line_buf) + 1);
+            strcpy(reader->headings, line_buf);
+        }
+    } else {
+        reader->headings = NULL;
+    }
+
+    // get rows
+    reader->rows = malloc(sizeof(char *));
+    while (fgets(line_buf, LINE_LEN, fp)) {
+        strip_nl(line_buf);
+        reader->rows[reader->rowcount] = malloc(strlen(line_buf) + 1);
+        strcpy(reader->rows[reader->rowcount], line_buf);
+        reader->rowcount++;
+        reader->rows =
+            realloc(reader->rows, (reader->rowcount + 1) * sizeof(char *));
+        if (reader->rows == NULL) {
+            print_error("init_csv_reader", "realloc failed for reader->rows");
+            csv_reader_cleanup(reader);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // get colcount
+    char *c = reader->rows[0];
+    while (*c) {
+        if (*c == ',') reader->colcount++;
+        c++;
+    }
+    // last column
+    reader->colcount++;
+
+    return reader;
 }
 
 /*
  * Number of rows in CSV file (excluding the headings)
  */
 int csv_reader_get_rowcount(struct csv_reader *reader) {
-  return reader->rowcount;
+    return reader->rowcount;
 }
 
 /*
  * Number of columns in CSV file
  */
 int csv_reader_get_colcount(struct csv_reader *reader) {
-  return reader->colcount;
+    return reader->colcount;
 }
 
 /*
  * Get raw headings, unedited from CSV file
  */
 const char *csv_reader_get_headings(struct csv_reader *reader) {
-  return reader->headings;
+    return reader->headings;
 }
 
 /*
  * Get raw rows, unedited from CSV file
  */
 const char **csv_reader_get_rows(struct csv_reader *reader) {
-  return (const char **)reader->rows;
+    return (const char **)reader->rows;
 }
 
 /*
  * Cleanup csv_reader_object's resources
  */
 void csv_reader_cleanup(struct csv_reader *reader) {
-  free(reader->headings);
+    free(reader->headings);
 
-  for (int i = 0; i < reader->rowcount; i++) {
-    free(reader->rows[i]);
-  }
-  free(reader->rows);
+    for (int i = 0; i < reader->rowcount; i++) {
+        free(reader->rows[i]);
+    }
+    free(reader->rows);
 
-  for (int i = 0; i < reader->misc_data_size; i++) {
-    free(reader->misc_data[i]);
-  }
-  free(reader->misc_data);
+    for (int i = 0; i < reader->misc_data_size; i++) {
+        free(reader->misc_data[i]);
+    }
+    free(reader->misc_data);
 
-  fclose(reader->csv_file);
-  free(reader);
+    fclose(reader->csv_file);
+    free(reader);
 }
 
 /*
  * Get a heading name by its index number.
  */
 const char *csv_reader_get_heading(struct csv_reader *reader, int i) {
-  int heading_start, heading_end;
-  char *heading;
+    int heading_start, heading_end;
+    char *heading;
 
-  if (i < 0 || i >= reader->colcount) {
-    print_error("csv_reader_get_heading", "invalid index");
-    fprintf(stderr, "~> index is `%d` (allowable indices are 0 to %d inclusive)\n",
-            i, reader->colcount - 1);
-    csv_reader_cleanup(reader);
-    exit(EXIT_FAILURE);
-  }
+    if (i < 0 || i >= reader->colcount) {
+        print_error("csv_reader_get_heading", "invalid index");
+        fprintf(stderr,
+                "~> index is `%d` (allowable indices are 0 to %d inclusive)\n",
+                i, reader->colcount - 1);
+        csv_reader_cleanup(reader);
+        exit(EXIT_FAILURE);
+    }
 
-  get_col_start_end(reader->headings, i, &heading_start, &heading_end);
-  heading = str_slice(reader->headings, heading_start, heading_end);
-  // save heading
-  dump_to_misc(reader, heading);
+    get_col_start_end(reader->headings, i, &heading_start, &heading_end);
+    heading = str_slice(reader->headings, heading_start, heading_end);
+    // save heading
+    dump_to_misc(reader, heading);
 
-  return heading;
+    return heading;
 }
-
 
 /*
  * Get a specific row item by row number and heading.
  */
-const char *csv_reader_get_rowitem(struct csv_reader *reader, int row, const char *heading) {
-  int item_start, item_end;
-  int idx = -1;
-  char *item;
-  const char *heading_search;
+const char *csv_reader_get_rowitem(struct csv_reader *reader, int row,
+                                   const char *heading) {
+    int item_start, item_end;
+    int idx = -1;
+    char *item;
+    const char *heading_search;
 
-  if (row < 0 || row >= reader->rowcount) {
-    print_error("csv_reader_get_rowitem", "out of bounds");
-    fprintf(stderr, "~> row to fetch `%d` is out of bounds\n", row);
-    csv_reader_cleanup(reader);
-    exit(EXIT_FAILURE);
-  }
+    if (row < 0 || row >= reader->rowcount) {
+        print_error("csv_reader_get_rowitem", "out of bounds");
+        fprintf(stderr, "~> row to fetch `%d` is out of bounds\n", row);
+        csv_reader_cleanup(reader);
+        exit(EXIT_FAILURE);
+    }
 
-  for (int i = 0; i < reader->colcount; i++) {
-    heading_search = csv_reader_get_heading(reader, i);
-    if (strcmp(heading_search, heading) == 0)
-      idx = i;
-  }
+    for (int i = 0; i < reader->colcount; i++) {
+        heading_search = csv_reader_get_heading(reader, i);
+        if (strcmp(heading_search, heading) == 0) idx = i;
+    }
 
-  if (idx == -1) {
-    print_error("csv_reader_get_heading", "invalid heading");
-    fprintf(stderr, "~> heading `%s` does not exist\n", heading);
-    csv_reader_cleanup(reader);
-    exit(EXIT_FAILURE);
-  }
+    if (idx == -1) {
+        print_error("csv_reader_get_heading", "invalid heading");
+        fprintf(stderr, "~> heading `%s` does not exist\n", heading);
+        csv_reader_cleanup(reader);
+        exit(EXIT_FAILURE);
+    }
 
-  get_col_start_end(reader->rows[row],  idx, &item_start, &item_end);
-  item = str_slice(reader->rows[row], item_start, item_end);
-  dump_to_misc(reader, item);
-  return item;
+    get_col_start_end(reader->rows[row], idx, &item_start, &item_end);
+    item = str_slice(reader->rows[row], item_start, item_end);
+    dump_to_misc(reader, item);
+    return item;
 }
 
 void csv_reader_print_table(struct csv_reader *reader) {
-  int width = 30;
-  char sep = '|';
+    int width = 30;
+    char sep = '|';
 
-  width = get_max_colwidth(reader) + 5;
-  // headers
-  print_bar(reader->colcount, width);
-  putchar(sep);
-  for (int i = 0; i < reader->colcount; i++) {
-    print_centered_text(csv_reader_get_heading(reader, i), i == 0 ? width - 1 : width);
+    width = get_max_colwidth(reader) + 5;
+    // headers
+    print_bar(reader->colcount, width);
     putchar(sep);
-  }
-  putchar('\n');
-  print_bar(reader->colcount, width);
-
-  //rows
-  for (int i = 0; i < reader->rowcount; i++) {
-    for (int j = 0; j < reader->colcount; j++) {
-      if (j == 0)
+    for (int i = 0; i < reader->colcount; i++) {
+        print_centered_text(csv_reader_get_heading(reader, i),
+                            i == 0 ? width - 1 : width);
         putchar(sep);
-      print_centered_text(csv_reader_get_rowitem(reader, i,
-            csv_reader_get_heading(reader, j)), j == 0 ? width - 1 : width);
-      putchar(sep);
     }
     putchar('\n');
-  }
-  print_bar(reader->colcount, width);
+    print_bar(reader->colcount, width);
+
+    // rows
+    for (int i = 0; i < reader->rowcount; i++) {
+        for (int j = 0; j < reader->colcount; j++) {
+            if (j == 0) putchar(sep);
+            print_centered_text(
+                csv_reader_get_rowitem(reader, i,
+                                       csv_reader_get_heading(reader, j)),
+                j == 0 ? width - 1 : width);
+            putchar(sep);
+        }
+        putchar('\n');
+    }
+    print_bar(reader->colcount, width);
 }
